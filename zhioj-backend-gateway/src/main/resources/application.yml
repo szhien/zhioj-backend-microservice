@@ -1,0 +1,40 @@
+server:
+  port: 8101
+
+spring:
+  application:
+    name: zhioj-backend-gateway
+  cloud:
+    nacos:
+      server-addr: 127.0.0.1:8848 # nacos服务地址
+    gateway:
+      routes:  # 路由配置,作用：使得通过路由地址区分，请求到对应的服务上面
+        - id: zhioj-backend-user-service  # 路由id,唯一
+          uri: lb://zhioj-backend-user-service  # 路由地址,lb:负载均衡
+          predicates:
+            - Path=/api/user/**
+        - id: zhioj-backend-question-service  # 路由id,唯一
+          uri: lb://zhioj-backend-question-service  # 路由地址,lb:负载均衡
+          predicates:
+            - Path=/api/question/**
+        - id: zhioj-backend-judge-service  # 路由id,唯一
+          uri: lb://zhioj-backend-judge-service  # 路由地址,lb:负载均衡
+          predicates:
+            - Path=/api/judge/**
+# 错误： Spring MVC found on classpath, which is incompatible with Spring Cloud Gateway.
+# 解决： Please set spring.main.web-application-type=reactive or remove spring-boot-starter-web dependency.
+  main:
+    web-application-type: reactive
+
+knife4j:
+  gateway:
+    enabled: true
+    # 指定服务发现的模式聚合微服务文档
+    strategy: discover
+    discover:
+      enabled: true
+      # 指定版本号(Swagger2|OpenAPI3)
+      version : swagger2
+      # 需要排除的微服务(eg:网关服务) todo 我一开始没有加这个，结果是不能成功显示聚合文档
+      excluded-services:
+        - zhioj-backend-gateway
